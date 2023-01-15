@@ -1,17 +1,19 @@
 import os
-import requests
-from itertools import count
-from dotenv import load_dotenv
 from collections import defaultdict
+from itertools import count
+
+import requests
+from dotenv import load_dotenv
+
+from predict_salary import predict_rub_salary
 
 
-
-def get_superjob_vacancies(language='Python', page=0, town_id=4, catalogues=48, period=30):
+def get_vacancies(language='Python', page=0, town_id=4, catalogues=48, period=30):
     load_dotenv()
-    secret_key = os.getenv('SECRET_KEY')
+    superjob_key = os.getenv('SUPERJOB_KEY')
     url = 'https://api.superjob.ru/2.0/vacancies'
     headers = {
-        'X-Api-App-Id': secret_key
+        'X-Api-App-Id': superjob_key
     }
     params = {
         'town': town_id,
@@ -21,28 +23,17 @@ def get_superjob_vacancies(language='Python', page=0, town_id=4, catalogues=48, 
         'period': period
     }
     response = requests.get(url, headers=headers, params=params)
-    superjob_programmers = response.json()
-    return superjob_programmers
-
-
-def predict_rub_salary_for_superJob(payment_from=None, payment_to=None):
-        if payment_from and payment_to:
-            average_salary = (payment_from + payment_to) / 2
-        elif payment_from:
-            average_salary = payment_from * 1.2
-        elif payment_to:
-            average_salary = payment_to * 0.8
-        return average_salary
+    return response.json()
 
 
 def get_statistics_vacancies(language):
     average_salaries = []
     for page in count(0, 1):
-        vacancies = get_superjob_vacancies(language, page)
+        vacancies = get_vacancies(language, page)
         for vacancy in vacancies['objects']:
             if not vacancy["payment_from"] and not vacancy["payment_to"] or not vacancy["currency"] == "rub":
                 continue
-            average_salaries.append(predict_rub_salary_for_superJob(vacancy['payment_from'], vacancy['payment_to']))
+            average_salaries.append(predict_rub_salary(vacancy['payment_from'], vacancy['payment_to']))
         if not vacancies['more']:
             break
     vacancies_processed = len(average_salaries)

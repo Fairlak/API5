@@ -1,18 +1,8 @@
-import requests
 from itertools import count
 
+import requests
 
-def predict_rub_salary_for_headhunter(salary_from=None, salary_to=None):
-    if salary_from and salary_to:
-        average_salary = (salary_from+salary_to)/2
-    elif salary_from:
-        average_salary = salary_from*1.2
-    elif salary_to:
-        average_salary = salary_to*0.8
-    else:
-        average_salary = None
-    return average_salary
-
+from predict_salary import predict_rub_salary
 
 def get_vacancies(language='Python', page=0, city_id=1, period=30):
     url = 'https://api.hh.ru/vacancies'
@@ -22,7 +12,7 @@ def get_vacancies(language='Python', page=0, city_id=1, period=30):
         'period': period,
         'page': page
     }
-    response = requests.get(url, params)
+    response = requests.get(url, params=params)
     return response.json()
 
 
@@ -37,7 +27,7 @@ def get_statistics_vacancies(language):
                 continue
             if not salary_item['salary']['currency'] == 'RUR':
                 continue
-            average_salaries.append(predict_rub_salary_for_headhunter(salary_item['salary']['from'], salary_item['salary']['to']))
+            average_salaries.append(predict_rub_salary(salary_item['salary']['from'], salary_item['salary']['to']))
     vacancies_processed = len(average_salaries)
     average_salary = int(sum(average_salaries)/vacancies_processed)
     statistics_vacancies = {
