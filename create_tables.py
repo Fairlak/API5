@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from terminaltables import AsciiTable
 
 from superjob import get_statistics_languages_sj
@@ -24,6 +27,8 @@ def create_table(statistics_languages, title):
 
 
 def main():
+    load_dotenv()
+    superjob_key = os.getenv('SUPERJOB_KEY')
     programming_languages = [
         'JavaScript',
         'Java',
@@ -34,10 +39,10 @@ def main():
         'C',
         'Go'
     ]
-    statistics_languages_sj = get_statistics_languages_sj(programming_languages)
-    create_table(statistics_languages_sj, title='SuperJob Moscow')
-    statistics_languages_hh = get_statistics_languages_hh(programming_languages)
-    create_table(statistics_languages_hh, title='Headhunter Moscow')
+    sj_languages_statistics = get_statistics_languages_sj(programming_languages, superjob_key)
+    create_table(sj_languages_statistics, title='SuperJob Moscow')
+    hh_languages_statistics = get_statistics_languages_hh(programming_languages)
+    create_table(hh_languages_statistics, title='Headhunter Moscow')
 
 
 

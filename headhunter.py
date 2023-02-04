@@ -13,6 +13,7 @@ def get_vacancies(language='Python', page=0, city_id=1, period=30):
         'page': page
     }
     response = requests.get(url, params=params)
+    response.raise_for_status()
     return response.json()
 
 
@@ -28,8 +29,12 @@ def get_statistics_vacancies(language):
             if not salary_item['salary']['currency'] == 'RUR':
                 continue
             average_salaries.append(predict_rub_salary(salary_item['salary']['from'], salary_item['salary']['to']))
-    vacancies_processed = len(average_salaries)
-    average_salary = int(sum(average_salaries)/vacancies_processed)
+    if average_salaries:
+        vacancies_processed = len(average_salaries)
+        average_salary = int(sum(average_salaries)/vacancies_processed)
+    else:
+        vacancies_processed = None
+        average_salary = None
     statistics_vacancies = {
         "vacancies_found": vacancies['found'],
         "vacancies_processed": vacancies_processed,
